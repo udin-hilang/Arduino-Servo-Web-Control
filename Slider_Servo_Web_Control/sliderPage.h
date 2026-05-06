@@ -1,3 +1,4 @@
+String html = R"rawliteral(
 <html>
     <head>
         <title>KONTROL SERVO</title>
@@ -42,3 +43,4 @@
         }
     </script>
 </html>
+)rawliteral";
