@@ -3,84 +3,80 @@
 #include <WebServer.h>
 #include "webPage.h"
 
-String cmd = "", ssid = "realme 12+ 5G", pw = "";  // WiFi credential
+// WiFi credentials (kosongkan pw jika open network)
+String cmd = "", ssid = "realme 12+ 5G", pw = "";  
 
-WebServer server(80);              // Web server di port 80
-
+WebServer server(80); // Inisialisasi Web Server pada port 80
 Servo myServo;
 
+// Render halaman utama dari file webPage.h
 void handleRoot() {
-  server.send(200, "text/html", html); // kirim halaman ke browser
+  server.send(200, "text/html", html); 
 }
 
+// Handler untuk menggerakkan servo ke kanan
 void handleRight() {
-  // Menyalakan semua LED
   server.sendHeader("Location", "/");
   server.send(303);
-
-  myServo.write(100);
+  myServo.write(100); // Set sudut servo ke 100 derajat
 }
 
+// Handler untuk posisi netral/berhenti
 void handleStop() {
-  // Menyalakan semua LED
   server.sendHeader("Location", "/");
   server.send(303);
-  myServo.write(90);
+  myServo.write(90);  // Set sudut servo ke posisi tengah (90 derajat)
 }
 
+// Handler untuk menggerakkan servo ke kiri
 void handleLeft() {
-  // Mematikan semua LED
   server.sendHeader("Location", "/");
   server.send(303);
-
-  myServo.write(80);
+  myServo.write(80);  // Set sudut servo ke 80 derajat
 }
-
 
 void setup() {
-  myServo.attach(13);
+  myServo.attach(13); // Hubungkan sinyal servo ke pin GPIO 13
   Serial.begin(9600);
 
-  // Koneksi ke WiFi
+  // Proses koneksi ke WiFi
   WiFi.begin(ssid, pw);
-  Serial.printf("\n\n\n\nConnecting to ");
-  Serial.println(ssid);
+  Serial.printf("\nConnecting to %s", ssid.c_str());
 
-  // Tunggu sampai terhubung
+  // Loop tunggu sampai WiFi terkoneksi
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
   }
 
-  Serial.printf("\nConnected!\n");
-  // Routing web server
+  Serial.printf("\nConnected! IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  // Routing URL ke fungsi handler masing-masing
   server.on("/", handleRoot);
   server.on("/Stop", handleStop);
   server.on("/Right", handleRight);
   server.on("/Left", handleLeft);
 
-  // Start server
-  server.begin();
-  Serial.println("Server ready");
+  server.begin(); // Jalankan server
+  Serial.println("HTTP Server started");
 }
 
 void loop() {
-  // Input debug via Serial Monitor
+  // Fitur debugging via Serial Monitor
   if (Serial.available()) {
     cmd = Serial.readString();
     cmd.trim();
-    Serial.println(cmd);
+    Serial.println("Command received: " + cmd);
 
-    // Command "1" untuk cek status WiFi
+    // Kirim angka '1' di Serial Monitor untuk cek info koneksi
     if (cmd == "1") {
-      Serial.printf("\nWiFi status:\nSSID: ");
-      Serial.println(WiFi.SSID());
-      Serial.print("IP: ");
+      Serial.printf("\n--- WiFi Info ---\nSSID: %s\nIP: ", WiFi.SSID().c_str());
       Serial.println(WiFi.localIP());
       cmd = "";
     }
   }
 
-  // Handle client request dari browser
+  // Tetap standby dengerin request dari client (browser)
   server.handleClient();
 }
