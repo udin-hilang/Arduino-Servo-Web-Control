@@ -1,58 +1,61 @@
 #include <ESP32Servo.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#include "sliderPage1.h"
+#include "sliderPage.h"
 
-String cmd = "", ssid = "realme 12+ 5G", pw = "";  // WiFi credential
+// WiFi credentials
+String cmd = "", ssid = "realme 12+ 5G", pw = ""; 
 
-WebServer server(80);              // Web server di port 80
-
+WebServer server(80);              // Inisialisasi web server pada port 80
 Servo myServo;
 
+// Fungsi untuk mengirimkan tampilan HTML ke browser
 void handleRoot() {
-  server.send(200, "text/html", html); // kirim halaman ke browser
+  server.send(200, "text/html", html); 
 }
 
+// Fungsi untuk menerima input nilai dari slider di halaman web
 void handleSpeed() {
-  String value = server.arg("value");
-  int speed = value.toInt();
-  myServo.write(speed);
+  String value = server.arg("value"); // Menangkap parameter "value" dari request
+  int speed = value.toInt();          // Mengubah tipe data string ke integer
+  myServo.write(speed);               // Menggerakkan servo sesuai nilai slider
 }
 
 
 void setup() {
-  myServo.attach(13);
+  myServo.attach(13);                 // Servo terhubung ke pin GPIO 13
   Serial.begin(9600);
 
-  // Koneksi ke WiFi
+  // Memulai koneksi ke jaringan WiFi
   WiFi.begin(ssid, pw);
   Serial.printf("\n\n\n\nConnecting to ");
   Serial.println(ssid);
 
-  // Tunggu sampai terhubung
+  // Menunggu status koneksi hingga terhubung
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
   }
 
   Serial.printf("\nConnected!\n");
-  // Routing web server
-  server.on("/", handleRoot);
-  server.on("/speed", handleSpeed);
 
-  // Start server
+  // Pengaturan routing URL server
+  server.on("/", handleRoot);         // Route halaman utama
+  server.on("/speed", handleSpeed);   // Route untuk menerima data slider
+
+  // Menjalankan server
   server.begin();
   Serial.println("Server ready");
 }
 
 void loop() {
-  // Input debug via Serial Monitor
+  // Fitur debugging melalui Serial Monitor
   if (Serial.available()) {
     cmd = Serial.readString();
     cmd.trim();
     Serial.println(cmd);
 
-    // Command "1" untuk cek status WiFi
+    // Tekan "1" di Serial Monitor untuk cek status jaringan
     if (cmd == "1") {
       Serial.printf("\nWiFi status:\nSSID: ");
       Serial.println(WiFi.SSID());
@@ -62,6 +65,6 @@ void loop() {
     }
   }
 
-  // Handle client request dari browser
+  // Standby melayani request dari client/browser
   server.handleClient();
 }
