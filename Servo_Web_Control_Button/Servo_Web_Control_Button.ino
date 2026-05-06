@@ -1,7 +1,7 @@
 #include <ESP32Servo.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#include "sliderPage.h"
+#include "webPage.h"
 
 String cmd = "", ssid = "realme 12+ 5G", pw = "";  // WiFi credential
 
